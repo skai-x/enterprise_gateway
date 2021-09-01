@@ -22,29 +22,33 @@ USER root
 
 RUN apt update && apt install -yq curl openjdk-8-jdk
 
+# Remove the kernels since we are using KernelSpec CRD to mount the kernels 
+# into the enterprise gateway.
+# ADD jupyter_enterprise_gateway_kernelspecs*.tar.gz /usr/local/share/jupyter/kernels/
+ADD jupyter_enterprise_gateway_kernel_image_files*.tar.gz /usr/local/bin/
+# The file is compiled from https://github.com/tkestack/elastic-jupyter-operator/blob/master/cli/main.go
+ADD kubeflow-launcher /usr/local/bin/
+COPY start-enterprise-gateway.sh /usr/local/bin/
+
+RUN mkdir -p /usr/local/share/jupyter && \
+    chown jovyan:users /usr/local/bin/start-enterprise-gateway.sh && \
+	chmod 0755 /usr/local/bin/start-enterprise-gateway.sh && \
+	touch /usr/local/share/jupyter/enterprise-gateway.log && \
+	chown -R jovyan:users /usr/local/share/jupyter /usr/local/bin/kubeflow-launcher && \
+	chmod 0666 /usr/local/share/jupyter/enterprise-gateway.log && \
+	rm -f /usr/local/bin/bootstrap-kernel.sh
+
 # Install Enterprise Gateway wheel and kernelspecs
 COPY jupyter_enterprise_gateway*.whl /tmp/
 RUN pip install /tmp/jupyter_enterprise_gateway*.whl && \
 	rm -f /tmp/jupyter_enterprise_gateway*.whl
 
-ADD jupyter_enterprise_gateway_kernelspecs*.tar.gz /usr/local/share/jupyter/kernels/
-ADD jupyter_enterprise_gateway_kernel_image_files*.tar.gz /usr/local/bin/
-
-COPY start-enterprise-gateway.sh /usr/local/bin/
-
-RUN chown jovyan:users /usr/local/bin/start-enterprise-gateway.sh && \
-	chmod 0755 /usr/local/bin/start-enterprise-gateway.sh && \
-	touch /usr/local/share/jupyter/enterprise-gateway.log && \
-	chown -R jovyan:users /usr/local/share/jupyter /usr/local/bin/kernel-launchers && \
-	chmod 0666 /usr/local/share/jupyter/enterprise-gateway.log && \
-	rm -f /usr/local/bin/bootstrap-kernel.sh
-
-# Download and install Spark
-RUN curl -s https://archive.apache.org/dist/spark/spark-${SPARK_VER}/spark-${SPARK_VER}-bin-hadoop2.7.tgz | \
-    tar -xz -C /opt && \
-    ln -s ${SPARK_HOME}-${SPARK_VER}-bin-hadoop2.7 $SPARK_HOME && \
-    mkdir -p /usr/hdp/current && \
-    ln -s ${SPARK_HOME}-${SPARK_VER}-bin-hadoop2.7 /usr/hdp/current/spark2-client
+# # Download and install Spark
+# RUN curl -s https://archive.apache.org/dist/spark/spark-${SPARK_VER}/spark-${SPARK_VER}-bin-hadoop2.7.tgz | \
+#     tar -xz -C /opt && \
+#     ln -s ${SPARK_HOME}-${SPARK_VER}-bin-hadoop2.7 $SPARK_HOME && \
+#     mkdir -p /usr/hdp/current && \
+#     ln -s ${SPARK_HOME}-${SPARK_VER}-bin-hadoop2.7 /usr/hdp/current/spark2-client
 
 USER jovyan
 
