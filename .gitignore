@@ -82,3 +82,5 @@ _site/
 # jetbrains ide stuff
 *.iml
 .idea/
+
+kubeflow-launcher

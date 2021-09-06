@@ -103,16 +103,19 @@ class KubeflowProcessProxy(ContainerProcessProxy):
 
             if self.delete_kernel_namespace and not self.kernel_manager.restarting:
                 v1_status = client.CoreV1Api().delete_namespace(name=self.kernel_namespace, body=body)
+                if v1_status and v1_status.status:
+                    termination_stati = ['Succeeded', 'Failed', 'Terminating']
+                    if any(status in v1_status.status for status in termination_stati):
+                        result = True
             else:
-                v1_status = client.CustomObjectsApi().delete_namespaced_custom_object(
+                # TODO(gaocegege): Check the response
+                api_response = client.CustomObjectsApi().delete_namespaced_custom_object(
                     group='kubeflow.tkestack.io',
                     version='v1alpha1',
                     plural='jupyterkernels',
                     namespace=self.kernel_namespace, body=body,
                     name=self.kernel_name)
-            if v1_status and v1_status.status:
-                termination_stati = ['Succeeded', 'Failed', 'Terminating']
-                if any(status in v1_status.status for status in termination_stati):
+                if api_response:
                     result = True
 
             if not result:
