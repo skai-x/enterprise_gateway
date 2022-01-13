@@ -1,4 +1,4 @@
-ARG BASE_CONTAINER=jupyter/minimal-notebook:703d8b2dcb88
+ARG BASE_CONTAINER=jupyter/minimal-notebook:f51aa480b7b5
 
 # Build the elastic-jupyter-operator binary
 FROM golang:1.17.6-alpine as builder
