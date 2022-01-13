@@ -116,7 +116,7 @@ clean-kernel-images: clean-kernel-py clean-kernel-spark-py clean-kernel-tf-py cl
 # Extra dependencies for each docker image...
 DEPENDS_demo-base:
 DEPENDS_enterprise-gateway-demo: $(FILE_kernelspecs_all)
-DEPENDS_enterprise-gateway: $(FILE_kernelspecs_all)
+DEPENDS_enterprise-gateway:
 DEPENDS_kernel-image-puller:
 DEPENDS_kernel-py DEPENDS_kernel-spark-py DEPENDS_kernel-r DEPENDS_kernel-spark-r DEPENDS_kernel-scala DEPENDS_kernel-tf-py DEPENDS_kernel-tf-gpu-py: $(FILE_kernelspecs_kubernetes) $(FILE_kernelspecs_docker)
 
