@@ -1,12 +1,26 @@
 ARG BASE_CONTAINER=jupyter/minimal-notebook:703d8b2dcb88
 
+# Build the elastic-jupyter-operator binary
+FROM golang:1.17.6-alpine as builder
+
+WORKDIR /workspace
+# Copy the Go Modules manifests
+COPY ../go.mod go.mod
+COPY ../go.sum go.sum
+
+# Download libs first to use docker buildx caching
+RUN go mod download
+RUN go mod verify
+
+# Copy the go source
+COPY ../cli/ cli/
+
+# Build
+RUN CGO_ENABLED=0 go build -a -o kubeflow-launcher cli/main.go
+
 FROM $BASE_CONTAINER
 
-ARG SPARK_VERSION
-
-ENV SPARK_VER $SPARK_VERSION
-ENV SPARK_HOME /opt/spark
-ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+LABEL org.opencontainers.image.source https://github.com/skai-x/enterprise_gateway
 
 RUN conda install --quiet --yes \
     cffi \
@@ -25,9 +39,9 @@ RUN apt update && apt install -yq curl openjdk-8-jdk
 # Remove the kernels since we are using KernelSpec CRD to mount the kernels 
 # into the enterprise gateway.
 # ADD jupyter_enterprise_gateway_kernelspecs*.tar.gz /usr/local/share/jupyter/kernels/
-ADD jupyter_enterprise_gateway_kernel_image_files*.tar.gz /usr/local/bin/
+# ADD jupyter_enterprise_gateway_kernel_image_files*.tar.gz /usr/local/bin/
 # The file is compiled from https://github.com/tkestack/elastic-jupyter-operator/blob/master/cli/main.go
-ADD kubeflow-launcher /usr/local/bin/
+COPY --from=builder /workspace/kubeflow-launcher /usr/local/bin/
 COPY start-enterprise-gateway.sh /usr/local/bin/
 
 RUN mkdir -p /usr/local/share/jupyter && \
