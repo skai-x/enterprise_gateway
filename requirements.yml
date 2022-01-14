@@ -2,7 +2,6 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - docker-py>=3.5.0
   - future
   - jinja2>=2.10
   - jupyter_client>=6.1
@@ -18,7 +17,6 @@ dependencies:
   - tornado>=6.1
   - traitlets>=4.2.0
   - watchdog
-  - yarn-api-client>=1.0
 
   # Test Requirements
   - ipykernel
