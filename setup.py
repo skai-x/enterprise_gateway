@@ -44,7 +44,6 @@ Apache Spark, Kubernetes and others..
         'enterprise_gateway.services.sessions'
     ],
     install_requires=[
-        'docker>=3.5.0',
         'future',
         'jinja2>=2.10',
         'jupyter_client~=6.1',
@@ -59,7 +58,6 @@ Apache Spark, Kubernetes and others..
         'tornado>=6.1',
         'traitlets>=4.3.3',
         'watchdog>=2.1.3',
-        'yarn-api-client>=1.0',
     ],
     extras_require = {
         'test': ['coverage', 'pytest', 'pytest-tornasync', 'ipykernel'],
