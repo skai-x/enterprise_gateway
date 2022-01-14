@@ -1,5 +1,3 @@
-ARG BASE_CONTAINER=jupyter/minimal-notebook:f51aa480b7b5
-
 # Build the elastic-jupyter-operator binary
 FROM golang:1.17.6-alpine as builder
 
@@ -19,19 +17,10 @@ COPY api/ api/
 # Build
 RUN CGO_ENABLED=0 go build -a -o kubeflow-launcher cli/main.go
 
-FROM $BASE_CONTAINER
+# Build the enterprise_gateway
+FROM python:3.9.9-slim-bullseye
 
 LABEL org.opencontainers.image.source https://github.com/skai-x/enterprise_gateway
-
-RUN conda install --quiet --yes \
-    cffi \
-    send2trash \
-    requests \
-    future \
-    pycryptodomex && \
-    conda clean -tipsy && \
-    fix-permissions $CONDA_DIR && \
-    fix-permissions /home/$NB_USER
 
 USER root
 
@@ -42,6 +31,10 @@ USER root
 # The file is compiled from https://github.com/tkestack/elastic-jupyter-operator/blob/master/cli/main.go
 COPY --from=builder /workspace/kubeflow-launcher /usr/local/bin/
 COPY enterprise_gateway/etc/docker/enterprise-gateway/start-enterprise-gateway.sh /usr/local/bin/
+
+ARG NB_USER="jovyan"
+ARG NB_UID="1000"
+RUN useradd -l -m -s /bin/bash -N -u "${NB_UID}" "${NB_USER}"
 
 RUN mkdir -p /usr/local/share/jupyter && \
     chown jovyan:users /usr/local/bin/start-enterprise-gateway.sh && \
