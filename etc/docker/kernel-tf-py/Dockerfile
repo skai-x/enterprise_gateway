@@ -7,7 +7,7 @@ RUN if [[ `uname -m` == "aarch64" ]] ; then \
        git clone https://github.com/tensorflow/io.git && \
        cd io && \
        python3 setup.py -q bdist_wheel --project tensorflow_io_gcs_filesystem && \
-       pip install dist/tensorflow_io_gcs_filesystem-0.24.0-cp39-cp39-linux_aarch64.whl && \
+       pip install dist/tensorflow_io_gcs_filesystem*.whl && \
        cd .. && \
        rm -rf io && \
        pip install tensorflow-aarch64 ; \
