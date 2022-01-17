@@ -1,8 +1,19 @@
-# Ubuntu:Bionic
-# TensorFlow 2.4.0
-ARG BASE_CONTAINER=jupyter/tensorflow-notebook:703d8b2dcb88
+FROM jupyter/scipy-notebook:python-3.9.7
 
-FROM $BASE_CONTAINER
+# Fix DL4006
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+
+RUN if [[ `uname -m` == "aarch64" ]] ; then \
+       git clone https://github.com/tensorflow/io.git && \
+       cd io && \
+       python3 setup.py -q bdist_wheel --project tensorflow_io_gcs_filesystem && \
+       pip install dist/tensorflow_io_gcs_filesystem*.whl && \
+       cd .. && \
+       rm -rf io && \
+       pip install tensorflow-aarch64 ; \
+    else \
+       pip install tensorflow ; \
+    fi
 
 ENV KERNEL_LANGUAGE python
 
