@@ -4,13 +4,7 @@ FROM jupyter/scipy-notebook:python-3.9.7
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 RUN if [[ `uname -m` == "aarch64" ]] ; then \
-       git clone https://github.com/tensorflow/io.git && \
-       cd io && \
-       python3 setup.py -q bdist_wheel --project tensorflow_io_gcs_filesystem && \
-       pip install dist/tensorflow_io_gcs_filesystem*.whl && \
-       cd .. && \
-       rm -rf io && \
-       pip install tensorflow-aarch64 ; \
+       pip install tensorflow -f https://tf.kmtea.eu/whl/stable.html ; \
     else \
        pip install tensorflow ; \
     fi
