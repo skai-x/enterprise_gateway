@@ -90,7 +90,7 @@ kernel_image_files: ../build/kernel_image_files
 	rm -f $(KERNEL_IMAGE_FILE)
 	@( cd ../build/kernel_image_files; tar -pvczf "../$(KERNEL_IMAGE_FILE)" . )
 
-../build/kernel_image_files: kernel-launchers/scala/lib kernel-launchers/bootstrap/bootstrap-kernel.sh
+../build/kernel_image_files: kernel-launchers/bootstrap/bootstrap-kernel.sh
 	@rm -rf ../build/kernel_image_files
 	@mkdir -p ../build/kernel_image_files/kernel-launchers
 	cp kernel-launchers/bootstrap/* ../build/kernel_image_files

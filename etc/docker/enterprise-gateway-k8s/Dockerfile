@@ -1,0 +1,47 @@
+ARG BASE_CONTAINER=jupyter/minimal-notebook:2022-01-24
+
+FROM $BASE_CONTAINER
+
+ARG SPARK_VERSION
+
+ENV SPARK_VER $SPARK_VERSION
+ENV SPARK_HOME /opt/spark
+ENV JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+
+RUN conda install --quiet --yes \
+    cffi \
+    send2trash \
+    requests \
+    future \
+    pycryptodomex && \
+    conda clean -tipsy && \
+    fix-permissions $CONDA_DIR && \
+    fix-permissions /home/$NB_USER
+
+USER root
+
+# Install Enterprise Gateway wheel and kernelspecs
+COPY enterprise_gateway/dist/jupyter_enterprise_gateway*.whl /tmp/
+RUN pip install /tmp/jupyter_enterprise_gateway*.whl && \
+	rm -f /tmp/jupyter_enterprise_gateway*.whl
+
+ADD enterprise_gateway/dist/jupyter_enterprise_gateway_kernelspecs*.tar.gz /usr/local/share/jupyter/kernels/
+ADD enterprise_gateway/dist/jupyter_enterprise_gateway_kernel_image_files*.tar.gz /usr/local/bin/
+
+COPY enterprise_gateway/etc/docker/enterprise-gateway-k8s/start-enterprise-gateway.sh /usr/local/bin/
+
+RUN mkdir -p /usr/local/share/jupyter && \
+    chown jovyan:users /usr/local/bin/start-enterprise-gateway.sh && \
+	chmod 0755 /usr/local/bin/start-enterprise-gateway.sh && \
+	touch /usr/local/share/jupyter/enterprise-gateway.log && \
+	chown -R jovyan:users /usr/local/share/jupyter /usr/local/bin/kernel-launchers && \
+	chmod 0666 /usr/local/share/jupyter/enterprise-gateway.log && \
+	rm -f /usr/local/bin/bootstrap-kernel.sh
+
+USER jovyan
+
+CMD ["/usr/local/bin/start-enterprise-gateway.sh"]
+
+EXPOSE 8888
+
+WORKDIR /usr/local/bin
